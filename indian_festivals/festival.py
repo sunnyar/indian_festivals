@@ -126,7 +126,8 @@ class IndianFestivals(object):
                 if bold_tags:
                     for tag in bold_tags:
                         if tag.get("style") and tag.get("style")[0] is not None:
-                            color = tag.get_attribute_list("style")[0].split(":")[1]
+                            color = tag.get("style").split(":")[1]
+
                             festival_type = self.get_fest_type(color)
                             festival_name = tag
 
@@ -145,7 +146,8 @@ class IndianFestivals(object):
                 if link_tags:
                     for tag in link_tags:
                         if tag.get("style") and tag.get("style")[0] is not None:
-                            color = tag.get_attribute_list("style")[0].split(":")[1]
+                            color = tag.get("style").split(":")[1]
+
                             festival_type =  self.get_fest_type(color)
                             festival_name = tag
 
