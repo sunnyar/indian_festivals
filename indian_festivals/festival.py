@@ -1,3 +1,8 @@
+#!/usr/bin/env python
+#-*- coding: utf-8 -*-
+#__author__ = "Sunny Arora"
+#__license__ = "MIT"
+
 try:
 	from urllib2 import urlopen
 except ImportError:
