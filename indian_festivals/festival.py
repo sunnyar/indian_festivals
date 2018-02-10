@@ -12,10 +12,10 @@ from collections import OrderedDict
 import json
 
 
-months_dict = ((1, "January"), (2, "February") ,(3, "March"),
-                (4, "April"), (5, "May"), (6, "June"),
-                (7, "July"), (8, "August"), (9, "September"),
-                (10, "October"), (11, "November"), (12, "December"))
+months_dict = ((1, "January"), (2, "February"), (3, "March"),
+               (4, "April"), (5, "May"), (6, "June"),
+               (7, "July"), (8, "August"), (9, "September"),
+               (10, "October"), (11, "November"), (12, "December"))
 
 
 class IndianFestivals(object):
@@ -26,7 +26,8 @@ class IndianFestivals(object):
 
     def __init__(self, year):
         # Parse below url to get all festivals and holidays info
-        page = urlopen("https://panchang-1205.appspot.com/calendars/indiancalendar?date=%s&lid=1261481&language=en"% year)
+        page = urlopen(
+            "https://panchang-1205.appspot.com/calendars/indiancalendar?date=%s&lid=1261481&language=en" % year)
         soup = BeautifulSoup(page, 'html.parser')
         self.festivals = soup.findChildren('table')
 
@@ -38,6 +39,10 @@ class IndianFestivals(object):
 
         month: Calendar month
         type : Integer
+
+        Output:
+        List of Festivals in a year
+        type: Json Dict
         """
 
         festival_dict = OrderedDict()
@@ -53,13 +58,15 @@ class IndianFestivals(object):
 
         for festival in self.festivals:
             # Festival Month
-            month_name = festival.findChildren(['thead'])[0].findChildren("th")[0].text.split(" ")[0]
+            month_name = festival.findChildren(
+                ['thead'])[0].findChildren("th")[0].text.split(" ")[0]
 
             if month and not fest_month == month_name:
                 continue
 
             # All festivals in a month
-            festival_details_per_month = festival.findChildren(['tbody'])[0].findChildren("tr")
+            festival_details_per_month = festival.findChildren(
+                ['tbody'])[0].findChildren("tr")
             festival_dict[month_name] = []
 
             # Store day, date and name for each festival
@@ -67,8 +74,8 @@ class IndianFestivals(object):
                 fests = festival_detail.findChildren("td")
                 festival_dict[month_name].append(
                     {"date": fests[0].text.strip().split(" ")[0],
-                        "day": fests[0].text.strip().split(" ")[1],
-                            "name": fests[1].text.strip()})
+                     "day": fests[0].text.strip().split(" ")[1],
+                     "name": fests[1].text.strip()})
 
             if month:
                 return json.dumps(festival_dict[fest_month], indent=1)
@@ -83,6 +90,10 @@ class IndianFestivals(object):
 
         month: Calendar month
         type : Integer
+
+        Output:
+        List of Festivals for a month
+        type: Json Dict
         """
 
         return self.get_festivals_in_a_year(month)
@@ -96,6 +107,10 @@ class IndianFestivals(object):
 
         month: Calendar month
         type : Integer
+
+        Output:
+        List of Religious Festivals in a year
+        type: Json Dict
         """
 
         festival_dict = OrderedDict()
@@ -112,12 +127,14 @@ class IndianFestivals(object):
         for festival in self.festivals:
 
             # All festivals in a month
-            festival_details_per_month = festival.findChildren(['tbody'])[0].findChildren("tr")
+            festival_details_per_month = festival.findChildren(
+                ['tbody'])[0].findChildren("tr")
 
             # Store day, date and name for each festival
             for festival_detail in festival_details_per_month:
                 # Festival Month
-                month_name = festival.findChildren(['thead'])[0].findChildren("th")[0].text.split(" ")[0]
+                month_name = festival.findChildren(
+                    ['thead'])[0].findChildren("th")[0].text.split(" ")[0]
 
                 fests = festival_detail.findChildren("td")
                 bold_tags = fests[1].findChildren("b")
@@ -139,16 +156,16 @@ class IndianFestivals(object):
 
                             festival_dict[festival_type].append(
                                 {"date": fests[0].text.strip().split(" ")[0],
-                                    "day": fests[0].text.strip().split(" ")[1],
-                                    "month": month_name,
-                                        "name": festival_name.text.strip()})
+                                 "day": fests[0].text.strip().split(" ")[1],
+                                 "month": month_name,
+                                 "name": festival_name.text.strip()})
 
                 if link_tags:
                     for tag in link_tags:
                         if tag.get("style") and tag.get("style")[0] is not None:
                             color = tag.get("style").split(":")[1]
 
-                            festival_type =  self.get_fest_type(color)
+                            festival_type = self.get_fest_type(color)
                             festival_name = tag
 
                             if festival_type not in list(festival_dict.keys()):
@@ -157,11 +174,15 @@ class IndianFestivals(object):
                             if month and not fest_month == month_name:
                                 continue
 
-                            festival_dict[festival_type].append(
+                            festiv_for_month = \
                                 {"date": fests[0].text.strip().split(" ")[0],
-                                    "day": fests[0].text.strip().split(" ")[1],
-                                    "month": month_name,
-                                        "name": festival_name.text.strip()})
+                                 "day": fests[0].text.strip().split(" ")[1],
+                                 "name": festival_name.text.strip()}
+                            if not month:
+                                festiv_for_month["month"] = month_name
+
+                            festival_dict[festival_type].append(
+                                festiv_for_month)
 
         return json.dumps(festival_dict, indent=1)
 
@@ -174,11 +195,19 @@ class IndianFestivals(object):
 
         month: Calendar month
         type : Integer
+
+        Output:
+        List of Religious Festivals for a month
+        type: Json Dict
         """
 
         return self.get_religious_festivals_in_a_year(month)
 
     def get_fest_type(self, color):
+        """
+        Filter the type of festivals
+        as per different religions
+        """
         festival_type = None
 
         if color == "#a60000":
@@ -199,21 +228,21 @@ if __name__ == "__main__":
     month = 2
     fest = IndianFestivals(year)
 
-    all_fests=fest.get_festivals_in_a_year()
-    fests_month=fest.get_festivals_in_a_month(month)
-    all_religious_fests=fest.get_religious_festivals_in_a_year()
-    fests_religious_month=fest.get_religious_festivals_in_a_month(month)
+    all_fests = fest.get_festivals_in_a_year()
+    fests_month = fest.get_festivals_in_a_month(month)
+    all_religious_fests = fest.get_religious_festivals_in_a_year()
+    fests_religious_month = fest.get_religious_festivals_in_a_month(month)
 
     print("Festivals in year %s : " % year)
     print(all_fests)
     print("================================================")
     print("Festivals in month %s for year %s: " %
-        (dict(months_dict)[month], year))
+          (dict(months_dict)[month], year))
     print(fests_month)
     print("================================================")
     print("Religious Festivals in year %s : " % year)
     print(all_religious_fests)
     print("================================================")
     print("Religious Festivals in month %s for year %s: " %
-        (dict(months_dict)[month], year))
+          (dict(months_dict)[month], year))
     print(fests_religious_month)
