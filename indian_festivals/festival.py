@@ -24,7 +24,7 @@ class IndianFestivals(object):
 
     def __init__(self, year: int):
         # Parse below url to get all festivals and holidays info
-        page = f"https://panchang.astrosage.com/calendars/indiancalendar?language=en&date={2022}"
+        page = f"https://panchang.astrosage.com/calendars/indiancalendar?language=en&date={year}"
         reading = requests.get(page)
         page = reading.text
         soup = BeautifulSoup(page, 'html.parser')
@@ -78,8 +78,6 @@ class IndianFestivals(object):
                          "name": fests[1].text.strip()})
                 except Exception as e:
                     pass
-                    # print(month_name)
-
             if month:
                 return json.dumps(festival_dict[fest_month], indent=1)
 
