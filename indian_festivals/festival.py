@@ -1,16 +1,14 @@
 #!/usr/bin/env python
-#-*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 #__author__ = "Sunny Arora"
 #__license__ = "MIT"
 
-try:
-    from urllib2 import urlopen
-except ImportError:
-    from urllib.request import urlopen
+from urllib.request import urlopen as uReq
+
 from bs4 import BeautifulSoup
 from collections import OrderedDict
 import json
-
+import requests
 
 months_dict = ((1, "January"), (2, "February"), (3, "March"),
                (4, "April"), (5, "May"), (6, "June"),
@@ -24,10 +22,11 @@ class IndianFestivals(object):
     on yearly and monthly basis in json prettyprint format
     """
 
-    def __init__(self, year):
+    def __init__(self, year: int):
         # Parse below url to get all festivals and holidays info
-        page = urlopen(
-            "https://panchang-1205.appspot.com/calendars/indiancalendar?date=%s&lid=1261481&language=en" % year)
+        page = f"https://panchang.astrosage.com/calendars/indiancalendar?language=en&date={year}"
+        reading = requests.get(page)
+        page = reading.text
         soup = BeautifulSoup(page, 'html.parser')
         self.festivals = soup.findChildren('table')
 
@@ -68,15 +67,17 @@ class IndianFestivals(object):
             festival_details_per_month = festival.findChildren(
                 ['tbody'])[0].findChildren("tr")
             festival_dict[month_name] = []
-
             # Store day, date and name for each festival
             for festival_detail in festival_details_per_month:
                 fests = festival_detail.findChildren("td")
-                festival_dict[month_name].append(
-                    {"date": fests[0].text.strip().split(" ")[0],
-                     "day": fests[0].text.strip().split(" ")[1],
-                     "name": fests[1].text.strip()})
 
+                try:
+                    festival_dict[month_name].append(
+                        {"date": fests[0].text.strip().split(" ")[0],
+                         "day": fests[0].text.strip().split(" ")[1],
+                         "name": fests[1].text.strip()})
+                except Exception as e:
+                    pass
             if month:
                 return json.dumps(festival_dict[fest_month], indent=1)
 
@@ -224,11 +225,12 @@ class IndianFestivals(object):
 
 if __name__ == "__main__":
     # Sample Test Code
-    year = "2018"
+    year = "2022"
     month = 2
     fest = IndianFestivals(year)
 
     all_fests = fest.get_festivals_in_a_year()
+
     fests_month = fest.get_festivals_in_a_month(month)
     all_religious_fests = fest.get_religious_festivals_in_a_year()
     fests_religious_month = fest.get_religious_festivals_in_a_month(month)
